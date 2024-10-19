@@ -18,16 +18,18 @@
   (let [player (player "player")
         deck (vec (sort-by (juxt :suit :name)
                            (create-playing-deck 1)))
-        [player deck] (deal-card->player player deck)]
+        [player deck _] (deal-card->player player deck)]
     (is (= {:player-type "player"
+            :hand-count 10
             :cards [{:value 10
                      :name "queen"
                      :suit "spade"}]}
            player))
     (is (= 51 (count deck)))
 
-    (let [[player deck] (deal-card->player player deck)]
+    (let [[player deck _] (deal-card->player player deck)]
       (is (= {:player-type "player"
+              :hand-count 20
               :cards [{:value 10
                        :name "queen"
                        :suit "spade"}
@@ -41,9 +43,24 @@
   (let [player (player "player")
         deck (vec (sort-by (juxt :suit :name)
                            (create-playing-deck 1)))
-        [player _] (deal-card->player player deck)
+        [player _ _] (deal-card->player player deck)
         player (reset-player-cards player)]
     (is (= {:player-type "player"
+            :hand-count 0
             :cards []}
            player))))
 
+(deftest busted?-test
+  (let [player (player "player")
+        deck (vec (sort-by (juxt :suit :name)
+                           (create-playing-deck 1)))
+        [player deck busted?] (deal-card->player player deck)
+        _ (is (false? busted?))
+
+        [player deck busted?] (deal-card->player player deck)
+        _ (is (false? busted?))
+
+        [player deck busted?] (deal-card->player player deck)]
+    (is (= 30 (:hand-count player)))
+    (is (= 49 (count deck)))
+    (is (true? busted?))))
