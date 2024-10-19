@@ -6,8 +6,8 @@
    [clojure.test :refer [deftest is]]))
 
 (deftest deal-test
-  (let [[card deck] (deal (vec (sort-by (juxt :suit :name)
-                                        (create-playing-deck 1))))]
+  (let [{:keys [card deck]} (deal (vec (sort-by (juxt :suit :name)
+                                                (create-playing-deck 1))))]
     (is (= {:value 10
             :name "queen"
             :suit "spade"}

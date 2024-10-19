@@ -1,16 +1,16 @@
 (ns clojure-blackjack.game)
 
 (defn deal [deck]
-  (let [card (peek deck)
-        deck (pop deck)]
-    [card deck]))
+  {:card (peek deck)
+   :deck (pop deck)})
 
 (defn deal-card->player [player deck]
-  (let [[card deck] (deal deck)
-        player (update player :cards conj card)
-        player (update player :hand-count + (:value card))
-        busted? (< 21 (:hand-count player))]
-    [player deck busted?]))
+  (let [{:keys [card deck]} (deal deck)
+        updated-player (-> player
+                           (update :cards conj card)
+                           (update :hand-count + (:value card)))
+        busted? (< 21 (:hand-count updated-player))]
+    [updated-player deck busted?]))
 
 (defn reset-player-cards [player]
   (assoc player :cards [] :hand-count 0))
