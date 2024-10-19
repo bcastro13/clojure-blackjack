@@ -12,3 +12,12 @@ pom.xml.asc
 .lein-failures
 .nrepl-port
 .cpcache/
+.unlighthouse
+.lsp
+.clj-kondo/.cache
+.clj-kondo/com.github.seancorfield/next.jdbc/hooks/com/github/seancorfield/next_jdbc.clj_kondo
+.nrepl-port*
+.DS_Store
+.eastwood
+.env
+.lein-env
