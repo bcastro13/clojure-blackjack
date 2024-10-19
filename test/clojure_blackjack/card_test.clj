@@ -1,7 +1,7 @@
 (ns clojure-blackjack.card-test
   (:require
    [clojure-blackjack.card :refer [create-card create-full-deck
-                                   create-full-suit]]
+                                   create-full-suit create-playing-deck]]
    [clojure.test :refer [deftest is]]))
 
 (deftest create-a-digit-card-test
@@ -241,3 +241,6 @@
              :suit "heart"}]
            full-deck))))
 
+(deftest create-playing-decks-test
+  (is (= 52 (count (create-playing-deck 1))))
+  (is (= 104 (count (create-playing-deck 2)))))

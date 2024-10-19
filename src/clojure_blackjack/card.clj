@@ -33,3 +33,7 @@
 
 (defn create-full-deck []
   (flatten (map create-full-suit ["spade" "club" "diamond" "heart"])))
+
+(defn create-playing-deck [num-decks]
+  (shuffle (flatten (for [_ (range num-decks)]
+                      (create-full-deck)))))
