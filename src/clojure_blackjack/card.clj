@@ -30,4 +30,4 @@
   (mapcat create-full-suit ["spade" "club" "diamond" "heart"]))
 
 (defn create-playing-deck [num-decks]
-  (shuffle (apply concat (repeat num-decks (create-full-deck)))))
+  (into '() (shuffle (apply concat (repeat num-decks (create-full-deck))))))
