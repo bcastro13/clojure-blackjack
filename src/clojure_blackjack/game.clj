@@ -65,12 +65,12 @@
 (defn process-player [player deck]
   (loop [current-player player
          current-deck deck]
-    (println "You currently have " (:hand-count current-player))
+    (println "You currently have" (:hand-count current-player))
     (if (hit?)
       (let [[updated-player new-deck busted?] (deal-card->player current-player current-deck)]
         (cond
           busted? (do
-                    (println "You've busted with " (:hand-count updated-player) "!")
+                    (println "You've busted with" (:hand-count updated-player) "!")
                     [updated-player new-deck])
           (= 21 (:hand-count updated-player)) (do
                                                 (println "You got 21!")
@@ -78,8 +78,23 @@
           :else (recur updated-player new-deck)))
       [current-player current-deck])))
 
+(defn process-dealer [dealer deck]
+  (loop [current-dealer dealer
+         current-deck deck]
+    (if (> 17 (:hand-count current-dealer))
+      (let [[updated-dealer new-deck busted?] (deal-card->player current-dealer current-deck)]
+        (cond
+          busted? (do
+                    (println "Dealer busted with" (:hand-count updated-dealer) "!")
+                    [updated-dealer new-deck])
+          (= 21 (:hand-count updated-dealer)) (do
+                                                (println "Dealer got 21!")
+                                                [updated-dealer new-deck])
+          :else (recur updated-dealer new-deck)))
+      [current-dealer current-deck])))
+
 (defn play [game-state]
-  (println "The dealer has " (:hand-count (:dealer game-state)))
+  (println "The dealer has" (:hand-count (:dealer game-state)))
   (let [[updated-players updated-deck]
         (reduce (fn [[players deck] player]
                   (let [[updated-player new-deck] (if (= 21 (:hand-count player))
@@ -91,8 +106,9 @@
                 [[] (:deck game-state)]
                 (:players game-state))
 
-        [updated-dealer final-deck _] (deal-card->player (:dealer game-state) updated-deck)]
-
+        [updated-dealer final-deck] (process-dealer (:dealer game-state) updated-deck)]
+    (when (> 21 (:hand-count updated-dealer))
+      (println "The dealer finished with" (:hand-count updated-dealer)))
     (assoc game-state
            :players updated-players
            :dealer updated-dealer
@@ -103,7 +119,7 @@
   (doseq [player (:players game-state)]
     (if (= 21 (:hand-count player))
       (println "Player has blackjack!")
-      (println "Player lost with " (:hand-count player)))))
+      (println "Player lost with" (:hand-count player)))))
 
 (defn start-game [num-players]
   (let [game-state (setup-game num-players 1)
