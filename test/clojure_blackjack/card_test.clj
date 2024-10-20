@@ -1,7 +1,9 @@
 (ns clojure-blackjack.card-test
   (:require
    [clojure-blackjack.card :refer [create-card create-full-deck
-                                   create-full-suit create-playing-deck]]
+                                   create-full-suit create-playing-deck deal
+                                   deal-card->player reset-player-cards]]
+   [clojure-blackjack.game :refer [player]]
    [clojure.test :refer [deftest is]]))
 
 (deftest create-a-digit-card-test
@@ -244,3 +246,64 @@
 (deftest create-playing-decks-test
   (is (= 52 (count (create-playing-deck 1))))
   (is (= 104 (count (create-playing-deck 2)))))
+
+(deftest deal-test
+  (let [{:keys [card deck]} (deal (vec (sort-by (juxt :suit :name)
+                                                (create-playing-deck 1))))]
+    (is (= {:value 10
+            :name "queen"
+            :suit "spade"}
+           card))
+    (is (= 51 (count deck)))))
+
+(deftest deal-card-to-player-test
+  (let [player (player "player")
+        deck (vec (sort-by (juxt :suit :name)
+                           (create-playing-deck 1)))
+        [player deck _] (deal-card->player player deck)]
+    (is (= {:player-type "player"
+            :hand-count 10
+            :cards [{:value 10
+                     :name "queen"
+                     :suit "spade"}]}
+           player))
+    (is (= 51 (count deck)))
+
+    (let [[player deck _] (deal-card->player player deck)]
+      (is (= {:player-type "player"
+              :hand-count 20
+              :cards [{:value 10
+                       :name "queen"
+                       :suit "spade"}
+                      {:value 10
+                       :name "king"
+                       :suit "spade"}]}
+             player))
+      (is (= 50 (count deck))))))
+
+(deftest reset-player-cards-test
+  (let [player (player "player")
+        deck (vec (sort-by (juxt :suit :name)
+                           (create-playing-deck 1)))
+        [player _ _] (deal-card->player player deck)
+        player (reset-player-cards player)]
+    (is (= {:player-type "player"
+            :hand-count 0
+            :cards []}
+           player))))
+
+(deftest busted?-test
+  (let [player (player "player")
+        deck (vec (sort-by (juxt :suit :name)
+                           (create-playing-deck 1)))
+        [player deck busted?] (deal-card->player player deck)
+        _ (is (false? busted?))
+
+        [player deck busted?] (deal-card->player player deck)
+        _ (is (false? busted?))
+
+        [player deck busted?] (deal-card->player player deck)]
+    (is (= 30 (:hand-count player)))
+    (is (= 49 (count deck)))
+    (is (true? busted?))))
+
