@@ -2,8 +2,8 @@
   (:require
    [clojure-blackjack.card :refer [create-playing-deck]]
    [clojure-blackjack.game :refer [create-game-state deal deal-card->player
-                                   deal-cards naturals? player
-                                   reset-player-cards setup-round]]
+                                   deal-cards dealer-natural naturals? player
+                                   reset-player-cards setup-game setup-round]]
    [clojure.test :refer [deftest is]]))
 
 (deftest deal-test
@@ -154,6 +154,14 @@
                                         :suit "spade"}
                                        {:value 10
                                         :name "queen"
+                                        :suit "spade"}]}
+                              {:player-type "player"
+                               :hand-count 21
+                               :cards [{:value 11
+                                        :name "ace"
+                                        :suit "club"}
+                                       {:value 10
+                                        :name "jack"
                                         :suit "spade"}]}]
                     :dealer {:player-type "dealer"
                              :hand-count 21
@@ -165,6 +173,11 @@
                                       :suit "spade"}]}
                     :deck []}
         naturals (naturals? game-state)]
-    (is (= {:players [false]
+    (is (= {:players [false true]
             :dealer true}
            naturals))))
+
+(deftest setup-game-test
+  (let [game-state (setup-game 1 1)]
+    (is (= 1 (count (:players game-state))))
+    (is (= 52 (count (:deck game-state))))))

@@ -1,4 +1,6 @@
-(ns clojure-blackjack.game)
+(ns clojure-blackjack.game
+  (:require
+   [clojure-blackjack.card :refer [create-playing-deck]]))
 
 (defn deal [deck]
   {:card (peek deck)
@@ -50,3 +52,63 @@
   (-> game-state
       deal-cards
       deal-cards))
+
+(defn setup-game [num-players num-decks]
+  (let [deck (create-playing-deck num-decks)]
+    (create-game-state num-players deck)))
+
+(defn hit? []
+  (print "Do you want to hit? <y/n> ")
+  (flush)
+  (= "y" (read-line)))
+
+(defn process-player [player deck]
+  (loop [current-player player
+         current-deck deck]
+    (println "You currently have " (:hand-count current-player))
+    (if (hit?)
+      (let [[updated-player new-deck busted?] (deal-card->player current-player current-deck)]
+        (cond
+          busted? (do
+                    (println "You've busted with " (:hand-count updated-player) "!")
+                    [updated-player new-deck])
+          (= 21 (:hand-count updated-player)) (do
+                                                (println "You got 21!")
+                                                [updated-player new-deck])
+          :else (recur updated-player new-deck)))
+      [current-player current-deck])))
+
+(defn play [game-state]
+  (println "The dealer has " (:hand-count (:dealer game-state)))
+  (let [[updated-players updated-deck]
+        (reduce (fn [[players deck] player]
+                  (let [[updated-player new-deck] (if (= 21 (:hand-count player))
+                                                    (do
+                                                      (println "You have blackjack!")
+                                                      [player deck])
+                                                    (process-player player deck))]
+                    [(conj players updated-player) new-deck]))
+                [[] (:deck game-state)]
+                (:players game-state))
+
+        [updated-dealer final-deck _] (deal-card->player (:dealer game-state) updated-deck)]
+
+    (assoc game-state
+           :players updated-players
+           :dealer updated-dealer
+           :deck final-deck)))
+
+(defn dealer-natural [game-state]
+  (println "Dealer has blackjack!")
+  (doseq [player (:players game-state)]
+    (if (= 21 (:hand-count player))
+      (println "Player has blackjack!")
+      (println "Player lost with " (:hand-count player)))))
+
+(defn start-game [num-players]
+  (let [game-state (setup-game num-players 1)
+        game-state (setup-round game-state)]
+    (if (= 21 (:hand-count (:dealer game-state)))
+      (dealer-natural game-state)
+      (play game-state))))
+
