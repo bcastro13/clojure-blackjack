@@ -19,3 +19,23 @@
   {:player-type player-type
    :hand-count 0
    :cards []})
+
+(defn create-game-state [num-players deck]
+  {:players (vec (repeat num-players (player "player")))
+   :dealer (player "dealer")
+   :deck deck})
+
+(defn deal-cards [game-state]
+  (let [[updated-players updated-deck]
+        (reduce (fn [[players deck] player]
+                  (let [[updated-player new-deck _] (deal-card->player player
+                                                                       deck)]
+                    [(conj players updated-player) new-deck]))
+                [[] (:deck game-state)]
+                (:players game-state))
+        [updated-dealer final-deck _] (deal-card->player (:dealer game-state)
+                                                         updated-deck)]
+    (assoc game-state
+           :players updated-players
+           :dealer updated-dealer
+           :deck final-deck)))

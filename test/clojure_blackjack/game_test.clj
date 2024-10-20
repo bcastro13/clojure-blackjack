@@ -1,8 +1,8 @@
 (ns clojure-blackjack.game-test
   (:require
    [clojure-blackjack.card :refer [create-playing-deck]]
-   [clojure-blackjack.game :refer [deal deal-card->player player
-                                   reset-player-cards]]
+   [clojure-blackjack.game :refer [create-game-state deal deal-card->player
+                                   deal-cards player reset-player-cards]]
    [clojure.test :refer [deftest is]]))
 
 (deftest deal-test
@@ -64,3 +64,50 @@
     (is (= 30 (:hand-count player)))
     (is (= 49 (count deck)))
     (is (true? busted?))))
+
+(deftest creaet-game-state-test
+  (let [deck [{:value 10
+               :name "jack"
+               :suit "spade"}]
+        game-state (create-game-state 1 deck)]
+    (println game-state)
+    (is (= {:players [{:player-type "player"
+                       :hand-count 0
+                       :cards []}]
+            :dealer {:player-type "dealer"
+                     :hand-count 0
+                     :cards []}
+            :deck deck}
+           game-state))))
+
+(deftest deal-cards-test
+  (let [initial-game-state (create-game-state 1 [{:value 10
+                                                  :name "jack"
+                                                  :suit "spade"}
+                                                 {:value 10
+                                                  :name "queen"
+                                                  :suit "spade"}
+                                                 {:value 10
+                                                  :name "king"
+                                                  :suit "spade"}
+                                                 {:value 9
+                                                  :name "9"
+                                                  :suit "spade"}])
+        final-game-state (deal-cards initial-game-state)]
+    (is (= {:players [{:player-type "player"
+                       :hand-count 9
+                       :cards [{:value 9
+                                :name "9"
+                                :suit "spade"}]}]
+            :dealer {:player-type "dealer"
+                     :hand-count 10
+                     :cards [{:value 10
+                              :name "king"
+                              :suit "spade"}]}
+            :deck [{:value 10
+                    :name "jack"
+                    :suit "spade"}
+                   {:value 10
+                    :name "queen"
+                    :suit "spade"}]}
+           final-game-state))))
