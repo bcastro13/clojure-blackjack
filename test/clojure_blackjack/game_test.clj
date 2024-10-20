@@ -2,7 +2,8 @@
   (:require
    [clojure-blackjack.card :refer [create-playing-deck]]
    [clojure-blackjack.game :refer [create-game-state deal deal-card->player
-                                   deal-cards player reset-player-cards]]
+                                   deal-cards naturals? player
+                                   reset-player-cards setup-round]]
    [clojure.test :refer [deftest is]]))
 
 (deftest deal-test
@@ -111,3 +112,59 @@
                     :name "queen"
                     :suit "spade"}]}
            final-game-state))))
+
+(deftest setup-round-test
+  (let [initial-game-state (create-game-state 1 [{:value 10
+                                                  :name "jack"
+                                                  :suit "spade"}
+                                                 {:value 10
+                                                  :name "queen"
+                                                  :suit "spade"}
+                                                 {:value 10
+                                                  :name "king"
+                                                  :suit "spade"}
+                                                 {:value 9
+                                                  :name "9"
+                                                  :suit "spade"}])
+        final-game-state (setup-round initial-game-state)]
+    (is (= {:players [{:player-type "player"
+                       :hand-count 19
+                       :cards [{:value 9
+                                :name "9"
+                                :suit "spade"}
+                               {:value 10
+                                :name "queen"
+                                :suit "spade"}]}]
+            :dealer {:player-type "dealer"
+                     :hand-count 20
+                     :cards [{:value 10
+                              :name "king"
+                              :suit "spade"}
+                             {:value 10
+                              :name "jack"
+                              :suit "spade"}]}
+            :deck []}
+           final-game-state))))
+
+(deftest naturals?-test
+  (let [game-state {:players [{:player-type "player"
+                               :hand-count 19
+                               :cards [{:value 9
+                                        :name "9"
+                                        :suit "spade"}
+                                       {:value 10
+                                        :name "queen"
+                                        :suit "spade"}]}]
+                    :dealer {:player-type "dealer"
+                             :hand-count 21
+                             :cards [{:value 10
+                                      :name "king"
+                                      :suit "spade"}
+                                     {:value 11
+                                      :name "ace"
+                                      :suit "spade"}]}
+                    :deck []}
+        naturals (naturals? game-state)]
+    (is (= {:players [false]
+            :dealer true}
+           naturals))))

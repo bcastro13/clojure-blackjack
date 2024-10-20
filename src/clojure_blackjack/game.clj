@@ -39,3 +39,14 @@
            :players updated-players
            :dealer updated-dealer
            :deck final-deck)))
+
+(defn naturals? [game-state]
+  (let [dealer-natural? (= 21 (:hand-count (:dealer game-state)))
+        player-naturals? (map #(= 21 (:hand-count %)) (:players game-state))]
+    {:dealer dealer-natural?
+     :players player-naturals?}))
+
+(defn setup-round [game-state]
+  (-> game-state
+      deal-cards
+      deal-cards))
